@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nurdaulet & Adina — 2 Months Together ❤️</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        roseSoft: '#FFF0F3',
+                        rosePink: '#FFE5EC',
+                        roseAccent: '#FF4D6D',
+                        roseDeep: '#C9184A',
+                        goldAccent: '#D4AF37',
+                    },
+                    fontFamily: {
+                        playfair: ['"Playfair Display"', 'serif'],
+                        poppins: ['Poppins', 'sans-serif'],
+                        cursive: ['"Dancing Script"', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0b0710;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+        }
+
+        /* Continuous Ambient Particle Canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Viewport Frame Container */
+        .scene-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* 3D Scene Perspective */
+        .viewport-3d {
+            perspective: 1200px;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Mansion Container & Camera Movement */
+        .mansion-world {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 3.5s cubic-bezier(0.25, 1, 0.5, 1), filter 2s ease;
+            background: linear-gradient(to bottom, #090514 0%, #1a0f2e 40%, #2b102c 70%, #15091d 100%);
+        }
+
+        .mansion-world.zoomed {
+            transform: translateZ(450px) translateY(50px);
+        }
+
+        .mansion-world.opened-door {
+            transform: translateZ(850px) translateY(70px);
+        }
+
+        /* Vector Mansion Visuals */
+        .mansion-facade {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1200px;
+            height: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        /* Architectural Elements */
+        .mansion-roof {
+            width: 80%;
+            height: 120px;
+            background: linear-gradient(135deg, #1b0c26, #2d143f);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            border-bottom: 4px solid #D4AF37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .mansion-body {
+            width: 85%;
+            height: 70%;
+            background: linear-gradient(180deg, #1e112a 0%, #12091c 100%);
+            border-left: 3px solid rgba(212, 175, 55, 0.3);
+            border-right: 3px solid rgba(212, 175, 55, 0.3);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+
+        .columns-row {
+            position: absolute;
+            top: 0;
+            width: 90%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .column {
+            width: 32px;
+            height: 100%;
+            background: linear-gradient(90deg, #2b183b 0%, #4a2b63 50%, #1b0e27 100%);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+            border-radius: 4px;
+        }
+
+        .mansion-window {
+            width: 60px;
+            height: 100px;
+            background: radial-gradient(circle, #ffe699 0%, #ffb703 60%, #d48806 100%);
+            border-radius: 30px 30px 0 0;
+            border: 3px solid #3d2352;
+            box-shadow: 0 0 25px rgba(255, 183, 3, 0.6);
+            position: absolute;
+        }
+
+        /* Doors Frame & Double Doors */
+        .door-frame {
+            position: absolute;
+            bottom: 0;
+            width: 200px;
+            height: 320px;
+            background: #140a1c;
+            border: 4px solid #D4AF37;
+            border-bottom: none;
+            border-radius: 100px 100px 0 0;
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.4);
+            display: flex;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .door-panel {
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(135deg, #2c121e 0%, #1a0812 100%);
+            border: 2px solid #542539;
+            box-sizing: border-box;
+            transition: transform 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .door-panel.left {
+            transform-origin: left center;
+            border-right: 1px solid #000;
+        }
+
+        .door-panel.right {
+            transform-origin: right center;
+            border-left: 1px solid #000;
+        }
+
+        .door-knocker {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #D4AF37;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Door Opened State */
+        .door-opened .door-panel.left {
+            transform: rotateY(-110deg);
+        }
+
+        .door-opened .door-panel.right {
+            transform: rotateY(110deg);
+        }
+
+        /* Adina Interior Hallway Silhouette */
+        .hallway-light {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 60%, #fff3d6 0%, #ffb7b2 40%, #ff4d6d 80%, #2b0818 100%);
+            opacity: 0;
+            transition: opacity 2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .door-opened .hallway-light {
+            opacity: 1;
+        }
+
+        /* Silhouette / Artistic Graphic of Adina */
+        .adina-silhouette {
+            width: 130px;
+            height: 250px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 400'%3E%3Cpath d='M100 40 C115 40 125 55 125 70 C125 85 115 95 100 95 C85 95 75 85 75 70 C75 55 85 40 100 40 Z' fill='%231f0a1d'/%3E%3Cpath d='M70 70 C50 100 45 160 55 220 C60 170 75 120 80 100 Z' fill='%231f0a1d'/%3E%3Cpath d='M130 70 C150 100 155 160 145 220 C140 170 125 120 120 100 Z' fill='%231f0a1d'/%3E%3Cpath d='M80 95 L120 95 L140 180 L160 380 L40 380 L60 180 Z' fill='%232a0c28'/%3E%3Cpath d='M85 98 C95 120 105 120 115 98 C130 140 145 260 150 380 L50 380 C55 260 70 140 85 98 Z' fill='%23120412'/%3E%3C/svg%3E") no-repeat center bottom;
+            background-size: contain;
+            filter: drop-shadow(0 0 15px rgba(255, 182, 193, 0.8));
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 2s ease 1s;
+        }
+
+        .door-opened .adina-silhouette {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Interactive First Person Hand Knocking */
+        .pov-hand {
+            position: absolute;
+            bottom: -150px;
+            right: 20%;
+            width: 140px;
+            height: 200px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150'%3E%3Cpath d='M30 150 L30 80 C30 70 40 65 45 75 L45 50 C45 42 55 42 55 50 L55 45 C55 37 65 37 65 45 L65 48 C65 40 75 40 75 48 L75 110 C75 130 60 150 30 150 Z' fill='%23ffdbac' stroke='%23e0a96d' stroke-width='3'/%3E%3C/svg%3E") no-repeat center;
+            background-size: contain;
+            z-index: 10;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .pov-hand.visible {
+            opacity: 1;
+            transform: translateY(-130px);
+        }
+
+        .pov-hand.knocking {
+            animation: knockAnim 0.4s ease 3;
+        }
+
+        @keyframes knockAnim {
+            0%, 100% { transform: translateY(-130px) rotate(0deg); }
+            50% { transform: translateY(-160px) rotate(-15deg); }
+        }
+
+        /* Overlay UI Elements */
+        .tap-prompt {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 8, 24, 0.85);
+            border: 1px solid #D4AF37;
+            padding: 12px 28px;
+            border-radius: 30px;
+            color: #FFF0F3;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            letter-spacing: 1px;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            cursor: pointer;
+            z-index: 20;
+            animation: pulseGlow 2s infinite ease-in-out;
+            white-space: nowrap;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(212, 175, 55, 0.4), inset 0 0 10px rgba(212, 175, 55, 0.2); transform: translateX(-50%) scale(1); }
+            50% { box-shadow: 0 0 30px rgba(255, 77, 109, 0.8), inset 0 0 15px rgba(255, 77, 109, 0.4); transform: translateX(-50%) scale(1.04); }
+        }
+
+        /* Scene Envelope Overlay */
+        .envelope-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 30;
+            background: rgba(11, 7, 16, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease;
+        }
+
+        .envelope-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Luxury Envelope Structure */
+        .envelope-wrapper {
+            position: relative;
+            width: 320px;
+            height: 220px;
+            background: #FFF0F3;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(255, 77, 109, 0.3);
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @media (min-width: 640px) {
+            .envelope-wrapper {
+                width: 420px;
+                height: 280px;
+            }
+        }
+
+        .envelope-wrapper:hover {
+            transform: scale(1.03) translateY(-5px);
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 55%;
+            background: #FFE5EC;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            transform-origin: top center;
+            transition: transform 0.8s ease 0.4s, z-index 0.2s ease 0.4s;
+            z-index: 4;
+            border-top: 2px solid #FF4D6D;
+        }
+
+        .envelope-pocket {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 75%;
+            background: linear-gradient(180deg, #FFF0F3 0%, #FFE5EC 100%);
+            clip-path: polygon(0 100%, 100% 100%, 100% 0, 50% 50%, 0 0);
+            border-radius: 0 0 12px 12px;
+            z-index: 3;
+        }
+
+        .wax-seal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 54px;
+            height: 54px;
+            background: radial-gradient(circle, #ff4d6d 0%, #c9184a 70%, #800f2f 100%);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 0 8px rgba(255,255,255,0.4);
+            z-index: 5;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+
+        .wax-seal svg {
+            width: 28px;
+            height: 28px;
+            fill: #FFF0F3;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .envelope-title {
+            position: absolute;
+            bottom: 25px;
+            width: 100%;
+            text-align: center;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: #C9184A;
+            z-index: 4;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* Letter Container */
+        .letter-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            background: rgba(15, 7, 18, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .letter-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .letter-paper {
+            width: 100%;
+            max-width: 650px;
+            max-height: 85vh;
+            background: #ffffff;
+            background-image: radial-gradient(#ffe5ec 1px, transparent 0);
+            background-size: 24px 24px;
+            border-radius: 16px;
+            border: 2px solid #FFE5EC;
+            box-shadow: 0 25px 60px rgba(201, 24, 74, 0.25), 0 0 40px rgba(212, 175, 55, 0.2);
+            padding: 30px 25px;
+            overflow-y: auto;
+            position: relative;
+            color: #2b1820;
+            transform: translateY(30px) scale(0.95);
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            scrollbar-width: thin;
+            scrollbar-color: #FF4D6D #FFF0F3;
+        }
+
+        @media (min-width: 640px) {
+            .letter-paper {
+                padding: 45px 40px;
+            }
+        }
+
+        .letter-modal.active .letter-paper {
+            transform: translateY(0) scale(1);
+        }
+
+        /* Scrollbar Styling */
+        .letter-paper::-webkit-scrollbar {
+            width: 6px;
+        }
+        .letter-paper::-webkit-scrollbar-track {
+            background: #FFF0F3;
+            border-radius: 10px;
+        }
+        .letter-paper::-webkit-scrollbar-thumb {
+            background: #FF4D6D;
+            border-radius: 10px;
+        }
+
+        .letter-header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px stroke #FFE5EC;
+            padding-bottom: 15px;
+        }
+
+        .letter-header h2 {
+            font-family: 'Playfair Display', serif;
+            color: #C9184A;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .letter-content {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.98rem;
+            line-height: 1.8;
+            color: #331e28;
+            white-space: pre-line;
+            text-align: left;
+        }
+
+        @media (min-width: 640px) {
+            .letter-content {
+                font-size: 1.05rem;
+                line-height: 1.9;
+            }
+        }
+
+        .letter-footer {
+            margin-top: 35px;
+            text-align: center;
+            border-top: 1px solid #FFE5EC;
+            padding-top: 25px;
+        }
+
+        /* Heart Pulse Icon */
+        .big-heart {
+            display: inline-block;
+            font-size: 3rem;
+            color: #FF4D6D;
+            animation: heartBeat 1.4s infinite ease-in-out;
+            filter: drop-shadow(0 0 12px rgba(255,77,109,0.6));
+            margin: 15px 0;
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            14% { transform: scale(1.25); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.15); }
+            70% { transform: scale(1); }
+        }
+
+        /* Audio Floating Controller */
+        .audio-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(20, 8, 24, 0.7);
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            backdrop-filter: blur(8px);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+        }
+
+        .audio-control:hover {
+            transform: scale(1.1);
+            border-color: #D4AF37;
+        }
+
+        .audio-control svg {
+            width: 20px;
+            height: 20px;
+            fill: #FFF0F3;
+        }
+
+        /* Sparks Canvas */
+        #sparkleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 6;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Ambient Hearts Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Audio Player Toggle -->
+    <button class="audio-control" id="musicBtn" aria-label="Toggle Music" title="Включить/выключить музыку">
+        <svg id="musicIconOn" class="hidden" viewBox="0 0 24 24">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+        <svg id="musicIconOff" viewBox="0 0 24 24">
+            <path d="M4.27 3L3 4.27l9 9v.28c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V14.27l7 7L20.73 20 4.27 3zM14 7h4V3h-6v5.18l2 2V7z"/>
+        </svg>
+    </button>
+
+    <!-- Main 3D Viewport Scene -->
+    <div class="scene-container">
+        <div class="viewport-3d">
+            <div class="mansion-world" id="mansionWorld">
+                
+                <!-- Mansion Architecture Visuals -->
+                <div class="mansion-facade">
+                    <div class="mansion-roof"></div>
+                    <div class="mansion-body">
+                        <!-- Column Accents -->
+                        <div class="columns-row">
+                            <div class="column"></div>
+                            <div class="column"></div>
+                            <div class="column"></div>
+                            <div class="column"></div>
+                        </div>
+
+                        <!-- Windows with Warm Ambient Glow -->
+                        <div class="mansion-window" style="top: 30px; left: 15%;"></div>
+                        <div class="mansion-window" style="top: 30px; right: 15%;"></div>
+
+                        <!-- Grand Entrance Doorway -->
+                        <div class="door-frame" id="doorFrame">
+                            <div class="hallway-light">
+                                <div class="adina-silhouette" id="adinaGirl"></div>
+                            </div>
+                            <div class="door-panel left" id="doorLeft">
+                                <div class="door-knocker"></div>
+                            </div>
+                            <div class="door-panel right" id="doorRight">
+                                <div class="door-knocker"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- First Person Hand -->
+        <div class="pov-hand" id="povHand"></div>
+
+        <!-- Interaction Prompt Button -->
+        <button class="tap-prompt" id="actionBtn">
+            Подойти к особняку ✨
+        </button>
+    </div>
+
+    <!-- Envelope Stage Overlay -->
+    <div class="envelope-overlay" id="envelopeOverlay">
+        <canvas id="sparkleCanvas"></canvas>
+        
+        <div class="envelope-wrapper" id="envelope">
+            <div class="envelope-flap" id="envelopeFlap"></div>
+            <div class="envelope-pocket"></div>
+            <div class="wax-seal" id="waxSeal">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </div>
+            <div class="envelope-title">Любимой Адине ❤️</div>
+        </div>
+        
+        <p class="mt-6 text-roseSoft font-playfair text-lg tracking-wide animate-pulse">
+            Нажми, чтобы открыть ❤️
+        </p>
+    </div>
+
+    <!-- Full Uncut Romantic Love Letter Modal -->
+    <div class="letter-modal" id="letterModal">
+        <div class="letter-paper" id="letterPaper">
+            
+            <div class="letter-header">
+                <h2>2 Months Together ❤️</h2>
+                <p class="font-cursive text-roseDeep text-xl mt-1">For My Dearest Adina</p>
+            </div>
+
+            <!-- Complete Uncut Text Content Container -->
+            <div class="letter-content" id="typedText"></div>
+
+            <!-- Interactive Finale Section -->
+            <div class="letter-footer hidden" id="letterFooter">
+                <div class="big-heart">❤️</div>
+                
+                <h3 class="font-playfair text-xl sm:text-2xl font-bold text-roseDeep mb-2">
+                    I love you, Adina. Forever yours, Нурдаулет. ❤️
+                </h3>
+                
+                <p class="font-cursive text-2xl text-goldAccent font-semibold">
+                    N forever A.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Audio Element targeting local file with Web Audio API Fallback -->
+    <audio id="bgAudio" loop preload="auto">
+        <source src="romance.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        /* -------------------------------------------------------------
+           1. CANVAS AMBIENT FLOATING HEARTS & LIGHT PARTICLES
+           ------------------------------------------------------------- */
+        const bgCanvas = document.getElementById('bgCanvas');
+        const ctx = bgCanvas.getContext('2d');
+
+        let width = bgCanvas.width = window.innerWidth;
+        let height = bgCanvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = bgCanvas.width = window.innerWidth;
+            height = bgCanvas.height = window.innerHeight;
+        });
+
+        class FloatingParticle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = height + Math.random() * 100;
+                this.size = Math.random() * 14 + 6;
+                this.speedY = Math.random() * 1.2 + 0.4;
+                this.speedX = Math.sin(Math.random() * Math.PI) * 0.8;
+                this.opacity = Math.random() * 0.6 + 0.2;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.02;
+                this.isHeart = Math.random() > 0.3;
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.x += Math.sin(this.y * 0.01) * 0.5;
+                this.rotation += this.rotSpeed;
+
+                if (this.y < -30) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.globalAlpha = this.opacity;
+
+                if (this.isHeart) {
+                    ctx.fillStyle = '#ff4d6d';
+                    ctx.beginPath();
+                    const topCurveHeight = this.size * 0.3;
+                    ctx.moveTo(0, topCurveHeight);
+                    ctx.bezierCurveTo(0, 0, -this.size / 2, 0, -this.size / 2, topCurveHeight);
+                    ctx.bezierCurveTo(-this.size / 2, (this.size + topCurveHeight) / 2, 0, this.size, 0, this.size);
+                    ctx.bezierCurveTo(0, this.size, this.size / 2, (this.size + topCurveHeight) / 2, this.size / 2, topCurveHeight);
+                    ctx.bezierCurveTo(this.size / 2, 0, 0, 0, 0, topCurveHeight);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    // Soft glowing star/particle
+                    ctx.fillStyle = '#D4AF37';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size * 0.25, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        const particles = Array.from({ length: 45 }, () => new FloatingParticle());
+
+        function animateBg() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+
+        /* -------------------------------------------------------------
+           2. WEB AUDIO API SYNTHESIZER (Knock sound + Soft Fallback Music)
+           ------------------------------------------------------------- */
+        let audioCtx = null;
+        let isAudioInit = false;
+        const bgAudio = document.getElementById('bgAudio');
+        const musicBtn = document.getElementById('musicBtn');
+        const musicIconOn = document.getElementById('musicIconOn');
+        const musicIconOff = document.getElementById('musicIconOff');
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Realistic Door Knock Sound Synthesizer
+        function playKnockSound() {
+            initAudioContext();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            [0, 0.18, 0.36].forEach(delay => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, now + delay);
+                osc.frequency.exponentialRampToValueAtTime(40, now + delay + 0.08);
+
+                gain.gain.setValueAtTime(0.8, now + delay);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.08);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now + delay);
+                osc.stop(now + delay + 0.09);
+            });
+        }
+
+        // Play Music Function with Audio Fade-In
+        function startBackgroundMusic() {
+            initAudioContext();
+            
+            // Try HTML5 Audio (romance.mp3)
+            bgAudio.volume = 0;
+            const playPromise = bgAudio.play();
+
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    fadeInAudio(bgAudio);
+                    updateMusicUI(true);
+                }).catch(() => {
+                    // Fallback to Procedural Synth Melody if romance.mp3 is missing
+                    playFallbackSynthMelody();
+                    updateMusicUI(true);
+                });
+            }
+        }
+
+        function fadeInAudio(audioEl) {
+            let vol = 0;
+            const interval = setInterval(() => {
+                vol += 0.05;
+                if (vol >= 0.55) {
+                    audioEl.volume = 0.55;
+                    clearInterval(interval);
+                } else {
+                    audioEl.volume = vol;
+                }
+            }, 150);
+        }
+
+        // Procedural Soft Romantic Harp Fallback
+        let synthInterval = null;
+        function playFallbackSynthMelody() {
+            if (synthInterval || !audioCtx) return;
+            const notes = [261.63, 329.63, 392.00, 493.88, 523.25, 659.25]; // C major 7 chord progression
+            let index = 0;
+
+            synthInterval = setInterval(() => {
+                if (bgAudio && !bgAudio.paused) return; // If mp3 starts playing, stop synth
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(notes[index % notes.length], now);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.15, now + 0.3);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 2.6);
+
+                index++;
+            }, 800);
+        }
+
+        function updateMusicUI(isPlaying) {
+            if (isPlaying) {
+                musicIconOn.classList.remove('hidden');
+                musicIconOff.classList.add('hidden');
+            } else {
+                musicIconOn.classList.add('hidden');
+                musicIconOff.classList.remove('hidden');
+            }
+        }
+
+        musicBtn.addEventListener('click', () => {
+            initAudioContext();
+            if (bgAudio.paused) {
+                bgAudio.play().then(() => {
+                    bgAudio.volume = 0.55;
+                    updateMusicUI(true);
+                }).catch(() => {
+                    playFallbackSynthMelody();
+                    updateMusicUI(true);
+                });
+            } else {
+                bgAudio.pause();
+                if (synthInterval) {
+                    clearInterval(synthInterval);
+                    synthInterval = null;
+                }
+                updateMusicUI(false);
+            }
+        });
+
+
+        /* -------------------------------------------------------------
+           3. SCENE FLOW LOGIC & INTERACTION
+           ------------------------------------------------------------- */
+        const mansionWorld = document.getElementById('mansionWorld');
+        const doorFrame = document.getElementById('doorFrame');
+        const actionBtn = document.getElementById('actionBtn');
+        const povHand = document.getElementById('povHand');
+        const envelopeOverlay = document.getElementById('envelopeOverlay');
+        const envelope = document.getElementById('envelope');
+        const envelopeFlap = document.getElementById('envelopeFlap');
+        const waxSeal = document.getElementById('waxSeal');
+        const letterModal = document.getElementById('letterModal');
+        const typedText = document.getElementById('typedText');
+        const letterFooter = document.getElementById('letterFooter');
+        const letterPaper = document.getElementById('letterPaper');
+
+        let sceneState = 0; // 0: Start, 1: At Door, 2: Knocked/Opening, 3: Letter Open
+
+        actionBtn.addEventListener('click', () => {
+            if (sceneState === 0) {
+                // Step 1: Walk up to Mansion
+                startBackgroundMusic();
+                mansionWorld.classList.add('zoomed');
+                actionBtn.textContent = 'Постучать в дверь ✊';
+                sceneState = 1;
+
+            } else if (sceneState === 1) {
+                // Step 2: Knock on Door
+                povHand.classList.add('visible');
+                setTimeout(() => {
+                    povHand.classList.add('knocking');
+                    playKnockSound();
+                }, 400);
+
+                actionBtn.style.opacity = '0';
+                actionBtn.style.pointerEvents = 'none';
+
+                setTimeout(() => {
+                    povHand.classList.remove('visible', 'knocking');
+                    // Step 3: Open Doors
+                    mansionWorld.classList.add('door-opened', 'opened-door');
+
+                    // Reveal Envelope stage after door opens
+                    setTimeout(() => {
+                        envelopeOverlay.classList.add('active');
+                        initSparkles();
+                    }, 2200);
+
+                }, 1800);
+            }
+        });
+
+
+        /* -------------------------------------------------------------
+           4. ENVELOPE OPENING ANIMATION
+           ------------------------------------------------------------- */
+        envelope.addEventListener('click', () => {
+            if (sceneState >= 3) return;
+            sceneState = 3;
+
+            // Wax seal pop animation
+            waxSeal.style.transform = 'translate(-50%, -50%) scale(1.4)';
+            waxSeal.style.opacity = '0';
+
+            // Open flap
+            setTimeout(() => {
+                envelopeFlap.style.transform = 'rotateX(180deg)';
+                envelopeFlap.style.zIndex = '1';
+            }, 300);
+
+            // Trigger burst of particles
+            createBurstParticles();
+
+            // Transition to Letter Modal
+            setTimeout(() => {
+                envelopeOverlay.classList.remove('active');
+                letterModal.classList.add('active');
+                startTextTyping();
+            }, 1200);
+        });
+
+
+        /* -------------------------------------------------------------
+           5. EXACT UNCUT LETTER TEXT REVEAL
+           ------------------------------------------------------------- */
+        const letterFullText = `My dearest, today we are celebrating our 2 months together. ❤️
+
+I want you to know how much I love you and how happy I am to have you in my life. You are the most beautiful girl in my eyes. Your smile, your eyes, your voice, and your lovely personality make you so special to me. I could look at you for hours and still think that you are the most beautiful girl in the whole world. Every little thing about you makes me fall in love with you even more. You are smart, kind, caring, sweet, and amazing. To me, you are perfect just the way you are. I wouldn't change anything about you.
+
+I want to make you happy every single day. I want to see your beautiful smile, hear your voice, support you, and be there whenever you need me. I want to be the person who makes you feel loved, safe, and special. I'm ready to face any difficulties with you because nothing is more important to me than our love. No matter what happens, I want us to stay together and get through everything side by side.
+
+I dream about our future together. I want to travel with you, visit beautiful places, watch sunsets together, laugh about silly things, and make thousands of happy memories. I want to spend my whole life with you and all the lives after that. If I had to choose you again in every life, I would choose you every single time.
+
+Thank you for coming into my life and making it so much better. You are my happiness, my favourite person, and my greatest gift. I love you more than words can ever say.
+
+Happy 2 months, my queen. This is only the beginning of our story.
+
+We are forever. N forever A. ❤️`;
+
+        function startTextTyping() {
+            let index = 0;
+            typedText.textContent = '';
+            
+            // Smooth paragraph chunks or character stream for readability
+            const timer = setInterval(() => {
+                if (index < letterFullText.length) {
+                    typedText.textContent += letterFullText.charAt(index);
+                    index++;
+                    // Auto scroll letter paper while typing
+                    letterPaper.scrollTop = letterPaper.scrollHeight;
+                } else {
+                    clearInterval(timer);
+                    // Show Grand Finale Footer
+                    letterFooter.classList.remove('hidden');
+                    startFinaleConfetti();
+                }
+            }, 22); // Elegant comfortable reading speed
+        }
+
+
+        /* -------------------------------------------------------------
+           6. ENVELOPE SPARKLE CANVAS & FINALE HEART EXPLOSION
+           ------------------------------------------------------------- */
+        const sparkleCanvas = document.getElementById('sparkleCanvas');
+        const sCtx = sparkleCanvas.getContext('2d');
+        let sparkles = [];
+
+        function initSparkles() {
+            sparkleCanvas.width = envelopeOverlay.clientWidth;
+            sparkleCanvas.height = envelopeOverlay.clientHeight;
+        }
+
+        function createBurstParticles() {
+            const centerX = sparkleCanvas.width / 2;
+            const centerY = sparkleCanvas.height / 2;
+
+            for (let i = 0; i < 60; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 6 + 2;
+                sparkles.push({
+                    x: centerX,
+                    y: centerY,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: Math.random() * 8 + 4,
+                    color: Math.random() > 0.5 ? '#FF4D6D' : '#D4AF37',
+                    alpha: 1
+                });
+            }
+            animateSparkles();
+        }
+
+        function animateSparkles() {
+            sCtx.clearRect(0, 0, sparkleCanvas.width, sparkleCanvas.height);
+            sparkles.forEach((p, idx) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.02;
+
+                sCtx.save();
+                sCtx.globalAlpha = Math.max(0, p.alpha);
+                sCtx.fillStyle = p.color;
+                sCtx.beginPath();
+                sCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                sCtx.fill();
+                sCtx.restore();
+
+                if (p.alpha <= 0) sparkles.splice(idx, 1);
+            });
+
+            if (sparkles.length > 0) {
+                requestAnimationFrame(animateSparkles);
+            }
+        }
+
+        function startFinaleConfetti() {
+            // Increase ambient canvas particles for grand finale
+            for (let i = 0; i < 45; i++) {
+                particles.push(new FloatingParticle());
+            }
+        }
+    </script>
+</body>
+</html>
